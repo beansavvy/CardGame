@@ -1,0 +1,80 @@
+.combat-page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.menu-section {
+  flex: 0 0 5%;
+  background-color: #333;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.characters-section {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #f0f0f0;
+}
+
+.cards-section {
+  flex: 0 0 30%;
+  background-color: #ccc;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.combat-deck-container {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  padding: 10px;
+}
+
+.deck-pile {
+  flex: 0 0 10%;
+  height: 150px;
+  background-color: #444;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 5px;
+}
+
+.pile-count {
+  font-size: 24px;
+}
+
+.pile-label {
+  font-size: 14px;
+}
+
+.hand {
+  flex: 0 0 80%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  height: 200px;
+  overflow: hidden;
+}
+
+.card-container {
+  position: absolute;
+  transition: transform 0.3s ease;
+  transform-origin: bottom center;
+}
+
+.hand .card-container {
+  /* Calculate the angle and position based on the index */
+  transform: translateX(calc((var(--index) - var(--midpoint)) * 20px))
+             rotate(calc((var(--index) - var(--midpoint)) * 5deg))
+             translateY(calc(abs(var(--index) - var(--midpoint)) * 5px));
+}

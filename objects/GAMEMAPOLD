@@ -1,0 +1,124 @@
+export const generateMap = () => {
+  const nodes = [];
+  let nodeId = 1;
+  const totalRows = 3;
+  const maxNodesPerRow = 5;
+
+  const getRandomInt = (min, max) =>
+    Math.floor(Math.random() * (max - min + 1)) + min;
+  const getRandomOffsetY = () => getRandomInt(-5, 5); // Slight variance in node positions
+  const getRandomOffsetX = () => getRandomInt(-2, 2);
+
+  // Step 1: Create the initial row of starting nodes
+  const startingNodesCount = getRandomInt(3, 4);
+  for (let i = 0; i < startingNodesCount; i++) {
+    nodes.push({
+      id: nodeId++,
+      x: 150 + i * 50 + getRandomOffsetX(),
+      y: 500 + getRandomOffsetY(),
+      connections: [],
+    });
+  }
+
+  // Function to calculate the connection probability based on current connections
+  const tryToConnect = (connectionsMade, maxConnections) => {
+    const probability = 1 - connectionsMade / maxConnections;
+    return Math.random() < probability;
+  };
+
+  // Function to create nodes for the next row with the branching and weaving logic
+  const createNextRow = (currentNodes) => {
+    const nextRowNodes = [];
+    let nodeCount = 0;
+
+    // Generate the next row of nodes
+    for (let i = 0; i < maxNodesPerRow; i++) {
+      const newNode = {
+        id: nodeId++,
+        x: 150 + i * 50 + getRandomOffsetX(),
+        y: currentNodes[0].y - 100 + getRandomOffsetY(), // Ensure next row is above the current row
+        connections: [],
+      };
+      nextRowNodes.push(newNode);
+      nodes.push(newNode);
+      nodeCount++;
+    }
+
+    const minId = nodes[nodes.length - 1].id;
+
+    // Now connect the current nodes to the next row nodes
+    let lastConnectedNodeIndex = 0;
+
+    for (let i = 0; i < currentNodes.length; i++) {
+      const currentNode = currentNodes[i];
+      let connectionsMade = 0;
+
+      // Ensure lastConnectedNodeIndex is within bounds and connects only to the next row
+      if (lastConnectedNodeIndex < nextRowNodes.length) {
+        currentNode.connections.push(nextRowNodes[lastConnectedNodeIndex].id);
+        connectionsMade++;
+      }
+
+      // Attempt to connect to subsequent next row nodes with decreasing probability
+      for (let j = lastConnectedNodeIndex + 1; j < nextRowNodes.length; j++) {
+        if (tryToConnect(connectionsMade, nextRowNodes.length - 1)) {
+          currentNode.connections.push(nextRowNodes[j].id);
+          lastConnectedNodeIndex = j;
+          connectionsMade++;
+        } else {
+          break;
+        }
+      }
+
+      // If this is not the last node, attempt to connect the next current node to the last connected node in the next row
+      if (
+        i < currentNodes.length - 1 &&
+        lastConnectedNodeIndex < nextRowNodes.length
+      ) {
+        if (tryToConnect(connectionsMade, nextRowNodes.length - 1)) {
+          currentNodes[i + 1].connections.push(
+            nextRowNodes[lastConnectedNodeIndex].id
+          );
+        } else {
+          // If it fails, attempt to connect to the next node in the next row
+          lastConnectedNodeIndex++;
+          if (lastConnectedNodeIndex < nextRowNodes.length) {
+            currentNodes[i + 1].connections.push(
+              nextRowNodes[lastConnectedNodeIndex].id
+            );
+          }
+        }
+      } else if (lastConnectedNodeIndex < nextRowNodes.length) {
+        // Special handling for the last node in the current row, ensuring it connects only to nodes in the next row
+        for (let j = lastConnectedNodeIndex; j < nextRowNodes.length; j++) {
+          currentNode.connections.push(nextRowNodes[j].id);
+        }
+      }
+    }
+
+    return nextRowNodes;
+  };
+
+  // Step 2: Create nodes for each row, ensuring no more than 5 nodes per row and no cross-overs
+  let currentNodes = nodes;
+  for (let rowIndex = 1; rowIndex < totalRows; rowIndex++) {
+    currentNodes = createNextRow(currentNodes);
+  }
+
+  // Step 3: Create the final boss node at the top
+  const bossNode = {
+    id: nodeId++,
+    x: 150 + getRandomOffsetX(),
+    y: 50 + getRandomOffsetY(),
+    connections: [],
+  };
+
+  // Connect the last row to the boss node
+  currentNodes.forEach((node) => {
+    node.connections.push(bossNode.id);
+  });
+
+  nodes.push(bossNode);
+
+  return nodes;
+};
